@@ -10,8 +10,19 @@ import android.os.Build
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
 import com.example.runningtracking.R
+import com.example.runningtracking.domain.location.LocationTracker
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.cancel
+import kotlinx.coroutines.flow.launchIn
+import kotlinx.coroutines.flow.onEach
+import org.koin.android.ext.android.inject
 
 class LocationTrackerService : Service() {
+
+    private val locationTracker: LocationTracker by inject()
+    private val serviceScope = CoroutineScope(SupervisorJob() + Dispatchers.IO)
 
     override fun onBind(intent: Intent?): IBinder? {
         return null
@@ -28,11 +39,22 @@ class LocationTrackerService : Service() {
     private fun start() {
         val notification = createNotification()
         startForeground(1, notification)
+
+        locationTracker.observeLocation()
+            .onEach {
+                // Keep the flow active to ensure background updates
+            }
+            .launchIn(serviceScope)
     }
 
     private fun stop() {
         stopForeground(STOP_FOREGROUND_REMOVE)
         stopSelf()
+    }
+
+    override fun onDestroy() {
+        super.onDestroy()
+        serviceScope.cancel()
     }
 
     private fun createNotification(): Notification {

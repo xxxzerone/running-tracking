@@ -1,9 +1,9 @@
-package com.example.runningtracking.data.repository
+package com.example.runningtracking.data.location
 
 import android.annotation.SuppressLint
 import android.location.Location
 import android.os.Looper
-import com.example.runningtracking.domain.repository.LocationTrackerRepository
+import com.example.runningtracking.domain.location.LocationTracker
 import com.google.android.gms.location.FusedLocationProviderClient
 import com.google.android.gms.location.LocationCallback
 import com.google.android.gms.location.LocationRequest
@@ -14,9 +14,9 @@ import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.callbackFlow
 import kotlinx.coroutines.tasks.await
 
-class LocationTrackerRepositoryImpl(
+class DefaultLocationTracker(
     private val fusedLocationProviderClient: FusedLocationProviderClient
-) : LocationTrackerRepository {
+) : LocationTracker {
 
     @SuppressLint("MissingPermission")
     override fun observeLocation(): Flow<Location> {
@@ -25,7 +25,7 @@ class LocationTrackerRepositoryImpl(
                 val lastLocation = fusedLocationProviderClient.lastLocation.await()
                 lastLocation?.let { trySend(it) }
             } catch (e: Exception) {
-                // Ignore failure to get last location
+                // Ignore
             }
 
             val request = LocationRequest.Builder(Priority.PRIORITY_HIGH_ACCURACY, 2000L)

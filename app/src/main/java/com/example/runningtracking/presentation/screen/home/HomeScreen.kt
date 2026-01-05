@@ -25,7 +25,10 @@ fun HomeScreen(
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        GoogleMapView(state.location)
+        GoogleMapView(
+            location = state.location,
+            pathPoints = state.pathPoints
+        )
 
         ExtendedFloatingActionButton(
             onClick = { onAction(HomeAction.OnToggleRunning) },

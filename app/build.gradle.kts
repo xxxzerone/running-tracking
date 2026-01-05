@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
@@ -6,13 +8,23 @@ plugins {
     alias(libs.plugins.kotlin.serialization)
 }
 
+val localProperties = Properties().apply {
+    val file = rootProject.file("local.properties")
+    if (file.exists()) {
+        file.inputStream().use { load(it) }
+    }
+}
+
 android {
     namespace = "com.example.runningtracking"
     compileSdk {
         version = release(36)
     }
 
+    val mapsApiKey = localProperties.getProperty("MAPS_API_KEY") ?: ""
+
     defaultConfig {
+        manifestPlaceholders["mapsApiKey"] = mapsApiKey
         applicationId = "com.example.runningtracking"
         minSdk = 24
         targetSdk = 36
@@ -70,6 +82,7 @@ dependencies {
     implementation(libs.maps.compose.widgets)
     implementation(libs.play.services.maps)
     implementation(libs.play.services.location)
+    implementation(libs.kotlinx.coroutines.play.services)
 
     // Room DB
     implementation(libs.androidx.room.runtime)

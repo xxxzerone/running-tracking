@@ -18,6 +18,7 @@ mapsCompose = "6.1.2"
 playServicesMaps = "19.0.0"
 playServicesLocation = "21.3.0"
 room = "2.6.1"
+kotlinxCoroutinesPlayServices = "1.9.0"
 
 [libraries]
 androidx-core-ktx = { group = "androidx.core", name = "core-ktx", version.ref = "coreKtx" }
@@ -57,6 +58,7 @@ play-services-maps = { module = "com.google.android.gms:play-services-maps", ver
 
 # 실시간 위치 정보
 play-services-location = { group = "com.google.android.gms", name = "play-services-location", version.ref = "playServicesLocation" }
+kotlinx-coroutines-play-services = { group = "org.jetbrains.kotlinx", name = "kotlinx-coroutines-play-services", version.ref = "kotlinxCoroutinesPlayServices" }
 
 # Room DB
 androidx-room-runtime = { group = "androidx.room", name = "room-runtime", version.ref = "room" }

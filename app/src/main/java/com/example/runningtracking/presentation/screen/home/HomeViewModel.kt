@@ -30,10 +30,21 @@ class HomeViewModel(
     private val _state = MutableStateFlow(HomeState())
     val state = _state.asStateFlow()
 
+    init {
+        runRepository.getAllRuns()
+            .onEach { runs ->
+                _state.update { it.copy(runLogs = runs) }
+            }
+            .launchIn(viewModelScope)
+    }
+
     fun onAction(action: HomeAction) {
         when (action) {
             HomeAction.OnFetchLocation -> fetchLocation()
             HomeAction.OnToggleRunning -> toggleRunning()
+            HomeAction.OnToggleRunLogs -> {
+                _state.update { it.copy(isRunLogsVisible = !it.isRunLogsVisible) }
+            }
         }
     }
 

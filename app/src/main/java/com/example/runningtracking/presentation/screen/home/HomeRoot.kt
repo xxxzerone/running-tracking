@@ -7,9 +7,15 @@ import android.view.WindowManager
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
+import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import org.koin.compose.viewmodel.koinViewModel
@@ -21,6 +27,17 @@ fun HomeRoot(
 ) {
     val state = viewModel.state.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
+
+    LaunchedEffect(Unit) {
+        viewModel.event.collect { event ->
+            when (event) {
+                HomeEvent.GpsDisabled -> {
+                    snackbarHostState.showSnackbar("GPS가 꺼져 있습니다. GPS를 켜주세요.")
+                }
+            }
+        }
+    }
 
     DisposableEffect(state.value.isRunning) {
         val window = (context as? Activity)?.window
@@ -53,8 +70,13 @@ fun HomeRoot(
         )
     }
 
-    HomeScreen(
-        state = state.value,
-        onAction = viewModel::onAction
-    )
+    Scaffold(
+        snackbarHost = { SnackbarHost(snackbarHostState) }
+    ) { padding ->
+        HomeScreen(
+            state = state.value,
+            onAction = viewModel::onAction,
+            modifier = Modifier.padding(padding)
+        )
+    }
 }

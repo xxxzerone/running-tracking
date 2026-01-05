@@ -8,16 +8,19 @@ import androidx.annotation.RequiresApi
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.example.runningtracking.data.service.LocationTrackerService
+import com.example.runningtracking.domain.location.GpsStatusMonitor
 import com.example.runningtracking.domain.location.LocationTracker
 import com.example.runningtracking.domain.model.Run
 import com.example.runningtracking.domain.repository.RunRepository
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.catch
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 
@@ -25,12 +28,25 @@ import kotlinx.coroutines.launch
 class HomeViewModel(
     private val context: Context,
     private val locationTracker: LocationTracker,
-    private val runRepository: RunRepository
+    private val runRepository: RunRepository,
+    private val gpsStatusMonitor: GpsStatusMonitor
 ) : ViewModel() {
     private val _state = MutableStateFlow(HomeState())
     val state = _state.asStateFlow()
 
+    private val _event = Channel<HomeEvent>()
+    val event = _event.receiveAsFlow()
+
     init {
+        gpsStatusMonitor.isGpsEnabled
+            .onEach { isEnabled ->
+                _state.update { it.copy(isGpsEnabled = isEnabled) }
+                if (!isEnabled) {
+                    _event.send(HomeEvent.GpsDisabled)
+                }
+            }
+            .launchIn(viewModelScope)
+
         runRepository.getAllRuns()
             .onEach { runs ->
                 _state.update { it.copy(runLogs = runs) }

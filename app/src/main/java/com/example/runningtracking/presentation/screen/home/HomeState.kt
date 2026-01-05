@@ -9,5 +9,6 @@ data class HomeState(
     val pathPoints: List<LatLng> = emptyList(),
     val startTime: Long = 0L,
     val runLogs: List<Run> = emptyList(),
-    val isRunLogsVisible: Boolean = false
+    val isRunLogsVisible: Boolean = false,
+    val isGpsEnabled: Boolean = true
 )

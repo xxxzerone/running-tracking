@@ -2,24 +2,45 @@ package com.example.runningtracking.presentation.screen.home
 
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Close
+import androidx.compose.material.icons.filled.PlayArrow
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.Icon
+import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.ui.unit.dp
 import com.example.runningtracking.presentation.component.GoogleMapView
-import com.google.maps.android.compose.CameraPositionState
-import com.google.maps.android.compose.rememberCameraPositionState
 
 @Composable
 fun HomeScreen(
     state: HomeState,
-    cameraPositionState: CameraPositionState,
+    onAction: (HomeAction) -> Unit,
     modifier: Modifier = Modifier
 ) {
     Box(
         modifier = modifier.fillMaxSize()
     ) {
-        GoogleMapView(
-            cameraPositionState = cameraPositionState
+        GoogleMapView(state.location)
+
+        ExtendedFloatingActionButton(
+            onClick = { onAction(HomeAction.OnToggleRunning) },
+            icon = {
+                Icon(
+                    imageVector = if (state.isRunning) Icons.Filled.Close else Icons.Filled.PlayArrow,
+                    contentDescription = null
+                )
+            },
+            text = {
+                Text(text = if (state.isRunning) "Running Stop" else "Running Start")
+            },
+            modifier = Modifier
+                .align(Alignment.BottomCenter)
+                .padding(bottom = 32.dp)
         )
     }
 }
@@ -27,10 +48,8 @@ fun HomeScreen(
 @Preview(showBackground = true, showSystemUi = true)
 @Composable
 private fun HomeScreenPreview() {
-    val cameraPositionState = rememberCameraPositionState()
-
     HomeScreen(
         state = HomeState(),
-        cameraPositionState = cameraPositionState
+        onAction = {}
     )
 }

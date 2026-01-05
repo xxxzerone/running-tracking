@@ -1,15 +1,16 @@
 package com.example.runningtracking.presentation.screen.home
 
 import android.Manifest
+import android.os.Build
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
+import androidx.annotation.RequiresApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
-import com.google.android.gms.maps.CameraUpdateFactory
-import com.google.maps.android.compose.rememberCameraPositionState
 import org.koin.compose.viewmodel.koinViewModel
 
+@RequiresApi(Build.VERSION_CODES.TIRAMISU)
 @Composable
 fun HomeRoot(
     viewModel: HomeViewModel = koinViewModel()
@@ -29,23 +30,14 @@ fun HomeRoot(
         permissionLauncher.launch(
             arrayOf(
                 Manifest.permission.ACCESS_FINE_LOCATION,
-                Manifest.permission.ACCESS_COARSE_LOCATION
+                Manifest.permission.ACCESS_COARSE_LOCATION,
+                Manifest.permission.POST_NOTIFICATIONS
             )
         )
     }
 
-    val cameraPositionState = rememberCameraPositionState()
-
-    LaunchedEffect(state.value.location) {
-        state.value.location?.let {
-            cameraPositionState.animate(
-                CameraUpdateFactory.newLatLngZoom(it, 17f)
-            )
-        }
-    }
-
     HomeScreen(
         state = state.value,
-        cameraPositionState = cameraPositionState
+        onAction = viewModel::onAction
     )
 }

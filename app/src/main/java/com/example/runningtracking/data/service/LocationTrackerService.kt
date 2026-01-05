@@ -29,11 +29,13 @@ class LocationTrackerService : Service() {
     }
 
     override fun onStartCommand(intent: Intent?, flags: Int, startId: Int): Int {
-        when (intent?.action) {
+        val action = intent?.action ?: ACTION_START // Default to START if intent is null (sticky restart)
+        
+        when (action) {
             ACTION_START -> start()
             ACTION_STOP -> stop()
         }
-        return super.onStartCommand(intent, flags, startId)
+        return START_STICKY
     }
 
     private fun start() {

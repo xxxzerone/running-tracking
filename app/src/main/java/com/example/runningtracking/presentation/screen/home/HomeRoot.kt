@@ -38,6 +38,9 @@ fun HomeRoot(
                 HomeEvent.BatteryLow -> {
                     snackbarHostState.showSnackbar("배터리가 30% 이하입니다. 충전이 필요할 수 있습니다.")
                 }
+                HomeEvent.RunFinishedLowBattery -> {
+                    snackbarHostState.showSnackbar("배터리가 부족하여 운동 기록을 저장하고 종료합니다.")
+                }
             }
         }
     }

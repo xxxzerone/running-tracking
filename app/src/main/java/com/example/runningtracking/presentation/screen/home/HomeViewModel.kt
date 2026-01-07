@@ -15,6 +15,7 @@ import com.example.runningtracking.domain.power.BatteryMonitor
 import com.example.runningtracking.domain.repository.RunRepository
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.asStateFlow
@@ -38,6 +39,8 @@ class HomeViewModel(
 
     private val _event = Channel<HomeEvent>()
     val event = _event.receiveAsFlow()
+
+    private var batteryObserverJob: Job? = null
 
     init {
         gpsStatusMonitor.isGpsEnabled
@@ -71,30 +74,70 @@ class HomeViewModel(
         val newIsRunning = !isRunning
 
         if (newIsRunning) {
-            val batteryLevel = batteryMonitor.getBatteryLevel()
-            if (batteryLevel <= 30) {
-                viewModelScope.launch {
-                    _event.send(HomeEvent.BatteryLow)
-                }
-            }
-            _state.update {
-                it.copy(
-                    isRunning = true,
-                    pathPoints = emptyList(),
-                    startTime = System.currentTimeMillis()
-                )
-            }
+            startRun()
         } else {
-            saveRun()
-            _state.update {
-                it.copy(isRunning = false)
+            stopRun()
+        }
+    }
+
+    private fun startRun() {
+        val batteryLevel = batteryMonitor.getBatteryLevel()
+        if (batteryLevel <= 30) {
+            viewModelScope.launch {
+                _event.send(HomeEvent.BatteryLow)
             }
         }
 
+        _state.update {
+            it.copy(
+                isRunning = true,
+                pathPoints = emptyList(),
+                startTime = System.currentTimeMillis()
+            )
+        }
+        
+        startBatteryMonitoring()
+        
         val intent = Intent(context, LocationTrackerService::class.java).apply {
-            action = if (newIsRunning) LocationTrackerService.ACTION_START else LocationTrackerService.ACTION_STOP
+            action = LocationTrackerService.ACTION_START
         }
         context.startForegroundService(intent)
+    }
+
+    private fun stopRun(isLowBattery: Boolean = false) {
+        saveRun()
+        stopBatteryMonitoring()
+        
+        _state.update {
+            it.copy(isRunning = false)
+        }
+
+        val intent = Intent(context, LocationTrackerService::class.java).apply {
+            action = LocationTrackerService.ACTION_STOP
+        }
+        context.startForegroundService(intent)
+
+        if (isLowBattery) {
+            viewModelScope.launch {
+                _event.send(HomeEvent.RunFinishedLowBattery)
+            }
+        }
+    }
+
+    private fun startBatteryMonitoring() {
+        batteryObserverJob?.cancel()
+        batteryObserverJob = batteryMonitor.observeBatteryLevel()
+            .onEach { level ->
+                if (level <= 20) {
+                    stopRun(isLowBattery = true)
+                }
+            }
+            .launchIn(viewModelScope)
+    }
+
+    private fun stopBatteryMonitoring() {
+        batteryObserverJob?.cancel()
+        batteryObserverJob = null
     }
 
     private fun saveRun() {

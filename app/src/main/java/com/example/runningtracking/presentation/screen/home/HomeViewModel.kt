@@ -11,6 +11,7 @@ import com.example.runningtracking.data.service.LocationTrackerService
 import com.example.runningtracking.domain.location.GpsStatusMonitor
 import com.example.runningtracking.domain.location.LocationTracker
 import com.example.runningtracking.domain.model.Run
+import com.example.runningtracking.domain.power.BatteryMonitor
 import com.example.runningtracking.domain.repository.RunRepository
 import com.google.android.gms.maps.model.LatLng
 import kotlinx.coroutines.Dispatchers
@@ -29,7 +30,8 @@ class HomeViewModel(
     private val context: Context,
     private val locationTracker: LocationTracker,
     private val runRepository: RunRepository,
-    private val gpsStatusMonitor: GpsStatusMonitor
+    private val gpsStatusMonitor: GpsStatusMonitor,
+    private val batteryMonitor: BatteryMonitor
 ) : ViewModel() {
     private val _state = MutableStateFlow(HomeState())
     val state = _state.asStateFlow()
@@ -69,6 +71,12 @@ class HomeViewModel(
         val newIsRunning = !isRunning
 
         if (newIsRunning) {
+            val batteryLevel = batteryMonitor.getBatteryLevel()
+            if (batteryLevel <= 30) {
+                viewModelScope.launch {
+                    _event.send(HomeEvent.BatteryLow)
+                }
+            }
             _state.update {
                 it.copy(
                     isRunning = true,

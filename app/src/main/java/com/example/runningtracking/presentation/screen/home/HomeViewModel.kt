@@ -37,7 +37,7 @@ class HomeViewModel(
     private val _state = MutableStateFlow(HomeState())
     val state = _state.asStateFlow()
 
-    private val _event = Channel<HomeEvent>()
+    private val _event = Channel<HomeEvent>(Channel.BUFFERED)
     val event = _event.receiveAsFlow()
 
     private var batteryObserverJob: Job? = null

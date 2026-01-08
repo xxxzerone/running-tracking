@@ -4,7 +4,9 @@ import com.example.runningtracking.data.local.dao.RunDao
 import com.example.runningtracking.data.local.entity.RunEntity
 import com.example.runningtracking.domain.model.Run
 import com.example.runningtracking.domain.repository.RunRepository
+import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.flowOn
 import kotlinx.coroutines.flow.map
 
 class RoomRunRepository(
@@ -29,6 +31,6 @@ class RoomRunRepository(
                     distanceMeters = entity.distanceMeters
                 )
             }
-        }
+        }.flowOn(Dispatchers.IO)
     }
 }

@@ -9,6 +9,7 @@ import androidx.activity.result.contract.ActivityResultContracts
 import androidx.annotation.RequiresApi
 import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarDuration
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.runtime.Composable
@@ -39,7 +40,10 @@ fun HomeRoot(
                     snackbarHostState.showSnackbar("배터리가 30% 이하입니다. 충전이 필요할 수 있습니다.")
                 }
                 HomeEvent.RunFinishedLowBattery -> {
-                    snackbarHostState.showSnackbar("배터리가 부족하여 운동 기록을 저장하고 종료합니다.")
+                    snackbarHostState.showSnackbar(
+                        message = "배터리가 부족하여 운동 기록을 저장하고 종료합니다.",
+                        duration = SnackbarDuration.Long
+                    )
                 }
             }
         }
